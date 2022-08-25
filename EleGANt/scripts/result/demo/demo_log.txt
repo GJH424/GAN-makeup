@@ -1,0 +1,73 @@
+name             : demo
+save_path        : result
+load_path        : ../ckpts/sow_pyramid_a5_e3d2_remapped.pth
+source_dir       : ../assets/images/non-makeup
+reference_dir    : ../assets/images/makeup
+gpu              : cpu
+device           : cpu
+save_folder      : result/demo
+DATA:
+  BATCH_SIZE: 1
+  IMG_SIZE: 256
+  NUM_WORKERS: 4
+  PATH: ../data/MT-Dataset
+LOG:
+  SAVE_FREQ: 10
+  VIS_FREQ: 1
+LOSS:
+  LAMBDA_A: 10.0
+  LAMBDA_B: 10.0
+  LAMBDA_EYE: 1.5
+  LAMBDA_IDT: 0.5
+  LAMBDA_LIP: 1
+  LAMBDA_MAKEUP: 100
+  LAMBDA_MAKEUP_EYE: 150.0
+  LAMBDA_MAKEUP_LIP: 100
+  LAMBDA_MAKEUP_SKIN: 10.0
+  LAMBDA_REC: 10
+  LAMBDA_SKIN: 0.1
+  LAMBDA_VGG: 0.005
+MODEL:
+  DOUBLE_E: False
+  D_CONV_DIM: 64
+  D_REPEAT_NUM: 3
+  D_TYPE: SN
+  G_CONV_DIM: 64
+  MERGE_MODE: conv
+  NUM_HEAD: 1
+  NUM_LAYER_D: 2
+  NUM_LAYER_E: 3
+  USE_FF: False
+  WINDOW_SIZE: 16
+PGT:
+  ANNEALING: True
+  EYE_ALPHA: 0.8
+  EYE_ALPHA_MILESTONES: (0, 12, 24, 50)
+  EYE_ALPHA_VALUES: (0.6, 0.8, 0.6, 0.4)
+  EYE_MARGIN: 12
+  LIP_ALPHA: 0.1
+  LIP_ALPHA_MILESTONES: (0, 12, 24, 50)
+  LIP_ALPHA_VALUES: (0.05, 0.2, 0.1, 0.0)
+  LIP_MARGIN: 4
+  SKIN_ALPHA: 0.3
+  SKIN_ALPHA_MILESTONES: (0, 12, 24, 50)
+  SKIN_ALPHA_VALUES: (0.2, 0.4, 0.3, 0.2)
+POSTPROCESS:
+  WILL_DENOISE: False
+PREPROCESS:
+  DOWN_RATIO: 0.23529411764705885
+  EYEBROW_CLASS: [2, 3]
+  EYE_CLASS: [4, 5]
+  FACE_CLASS: [1, 6]
+  LANDMARK_POINTS: 68
+  LIP_CLASS: [7, 9]
+  UP_RATIO: 0.7058823529411765
+  WIDTH_RATIO: 0.23529411764705885
+TRAINING:
+  BETA1: 0.5
+  BETA2: 0.999
+  DOUBLE_D: False
+  D_LR: 0.0002
+  G_LR: 0.0002
+  LR_DECAY_FACTOR: 0.05
+  NUM_EPOCHS: 50

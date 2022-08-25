@@ -1,0 +1,144 @@
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>로그인</title>
+<!--<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">-->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
+<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+</head>
+<style>
+
+	#email{
+		width: 328px;
+		height: 56px;
+		padding: 18px 12px;
+		border: 1px solid #e5e8eb;
+		background-color: #fff;
+		outline: 0;
+		transition: border-color .15s linear;
+	}
+	#password{
+		width: 328px;
+		height: 56px;
+		padding: 18px 12px;
+		border: 1px solid #e5e8eb;
+		background-color: #fff;
+		outline: 0;
+		transition: border-color .15s linear;
+	}
+
+
+
+      /* css variables */
+      .dark {
+         --bg: black;
+         --fg: white;
+      }
+
+      .white {
+         --bg: white;
+         --fg: black;
+      }
+
+      body {
+         /* use the variable */
+         background-color: var(--bg);
+         color: var(--fg);
+      }
+
+      button {
+         /* use the variable */
+         background-color: var(--bg);
+         color: var(--fg);
+         border-radius: 5px;
+         border-style: dashed;
+      }
+
+</style>
+<body>
+<!--내비게이션바-->
+<nav class="container" style="margin-top:10px; margin-bottom:30px;">
+  <a class="navbar-brand" href="{{url_for('home')}}" style="display: inline-block; float:left; ">서초 AI(생성딥러닝팀)</a>
+
+<div class="nav-wrap">
+
+	<div style="display: inline-block; margin-top:10px; margin-right: 5px; float: right;">
+		<form action="/">
+			<button type="submit" id="login-btn" class="btn btn-primary" href="{{url_for('home')}}"style="width:80px;">홈페이지</button>
+		</form>
+	</div>
+
+	<div style="display: inline-block; margin-top:10px; margin-right: 5px; float: right;">
+		<button class="btn btn-primary" id='switch' onclick="switchTheme()" style="width:80px;">테마 변경</button>
+	</div>
+
+</div>
+
+</div>
+</nav>
+<!--내비게이션바-->
+
+
+<div class="container">
+	<div class="row" style="margin-left:35%; margin-top:5% ">
+	<h2>로그인 화면입니다.</h2>
+	<form action="{{ url_for('login') }}" method="post">
+
+        {% with messages = get_flashed_messages() %}
+			{% if messages %}
+			<script> alert("{{messages[-1]}}")</script>
+			{% endif %}
+		{% endwith %}
+
+		<div class="form-group" style="margin-top:10px; margin-bottom:-7px;">
+			<label for="email"></label>
+			<input type="email" class="form-control" id="email" name="email" placeholder="이메일" name="email" autocomplete='off' autofocus>
+		</div>
+		<div class="form-group">
+			<label for="pwd"></label>
+			<input type="password" class="form-control" id="password" name="password" placeholder="비밀번호" autocomplete='off' name="pswd">
+		</div>
+		<button type="submit" class="btn btn-primary">로그인</button>
+		<p class="bottom">계정이 없나요?  <a class="bottom" href="{{url_for('register')}}"> 회원가입 </a></p>
+	</form>
+		</div>
+</div>
+</body>
+<script>
+
+<!--다크모드-->
+      // setting theme when contents are loaded
+      window.addEventListener('load', function () {
+         var theme = localStorage.getItem('theme');
+         // when first load, choose an initial theme
+         if (theme === null || theme === undefined) {
+            theme = 'light';
+            localStorage.setItem('theme', theme);
+         }
+         // set theme
+         var html = document.querySelector("html");
+         // apply the variable
+         html.classList.add(theme);
+      })
+
+      function switchTheme() {
+         var theme = localStorage.getItem('theme');
+         var html = document.querySelector('html');
+         // choose new theme
+         if (theme === 'dark') {
+            new_theme = 'light';
+         } else {
+            new_theme = 'dark';
+         }
+         // remove previous class
+         html.classList.remove(theme);
+         // add new class
+         html.classList.add(new_theme);
+         // store theme
+         localStorage.setItem('theme', new_theme);
+      }
+<!--다크모드-->
+
+</script>
+</html>
