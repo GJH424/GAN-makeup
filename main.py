@@ -46,9 +46,11 @@ app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = ''
 app.config['MYSQL_DB'] = 'PJ_user_system'
 
+
+
 @app.route('/')
 def home():
-    return render_template('test.html')
+    return render_template('index.html')
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -123,7 +125,7 @@ def upload_image():
                 return render_template('user.html', filename=filename, img_list=img_list,
                                        left_refer_list=left_refer_list, right_refer_list=right_refer_list)
         except:
-            return render_template('test.html', filename=filename, img_list=img_list)
+            return render_template('index.html', filename=filename, img_list=img_list)
 
     else:
         flash('png, jpg, jpeg 유형의 파일만 가능합니다.')
