@@ -14,6 +14,9 @@ sys.path.append('.')
 from EleGANt.training.config import get_config
 from EleGANt.training.inference import Inference
 from EleGANt.training.utils import create_logger, print_args # 로그 생성용
+
+import cv2 # 다중인식용
+import glob
 # 모델용 #
 
 # 로그인 #
@@ -33,38 +36,32 @@ RESULT_FOLDER = 'static/results/'
 UPLOAD_FOLDER = 'static/uploads/'
 app.config['RESULT_FOLDER'] = RESULT_FOLDER
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024 # 업로드 5MB 용량 제한
 
 app.secret_key = "secret key"
-# app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024 # 업로드 5MB 용량 제한
-ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 
 app.config['BCRYPT_LEVEL'] = 10
-
-# app.secret_key = 'xyzsdfg'
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = ''
 app.config['MYSQL_DB'] = 'PJ_user_system'
-
-
 
 @app.route('/')
 def home():
     return render_template('index.html')
 
 def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ['png', 'jpg', 'jpeg']
 
 @app.route('/', methods=['POST'])
 def upload_image():
-    if 'file' not in request.files:
-        flash('파일이 존재하지 않습니다.')
-        redirect(request.url)
+    # if 'file' not in request.files:
+    #     flash('파일이 존재하지 않습니다.')
+    #     redirect(request.url)
     file = request.files['file']
-    if file.filename == '':
-        flash('업로드할 이미지를 선택하세요.')
-        redirect(request.url)
+    # if file.filename == '':
+    #     flash('업로드할 이미지를 선택하세요.')
+    #     redirect(request.url)
     if file and allowed_file(file.filename):
         filename = time.strftime("[%Y-%m-%d-%H:%M]")+id.uuid4().hex + "_" + secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
@@ -105,9 +102,7 @@ def upload_image():
 
             left_refer_list = [f"references/{refer_img}" for refer_img in refer_list][:9]
             right_refer_list = [f"references/{refer_img}" for refer_img in refer_list][9:]
-
             ### 레퍼런스 ###
-
 
         except:
             flash('얼굴 사진을 업로드 하세요!')
@@ -137,6 +132,48 @@ def upload_image():
 def display_upload(filename):
     return redirect(url_for('static', filename='uploads/' + filename), code=301)
 
+class FaceCropper(object):
+    CASCADE_PATH = "haarcascade_frontalface_default.xml"
+
+    def __init__(self):
+        self.face_cascade = cv2.CascadeClassifier(self.CASCADE_PATH)
+
+    def generate(self, image_path, filename):
+        img = cv2.imread(image_path)
+        if (img is None):
+            print("Can't open image file")
+            return 0
+
+        faces = self.face_cascade.detectMultiScale(img, 1.1, 3, minSize=(100, 100))
+        if (faces is None):
+            print('Failed to detect face')
+            return 0
+        # facecnt = len(faces)
+        # print("Detected faces: %d" % facecnt)
+        i = 0
+        height, width = img.shape[:2]
+
+        tmp_res=[]
+        save_path = f"./static/uploads/{os.path.splitext(filename)[0]}"
+
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+
+        for (x, y, w, h) in faces:
+            r = max(w, h) / 2
+            centerx = x + w / 2
+            centery = y + h / 2
+            nx = int(centerx - r)
+            ny = int(centery - r)
+            nr = int(r * 2)
+
+            faceimg = img[ny:ny+nr, nx:nx+nr]
+            lastimg = cv2.resize(faceimg, (361, 361))
+            i += 1
+            tmp_res.append(lastimg)
+            cv2.imwrite(f"{save_path}/src_{i}.png", lastimg)
+        return save_path
+
 
 def main(config, args, filename, generating_image):
     ### log ###
@@ -157,15 +194,37 @@ def main(config, args, filename, generating_image):
     inference = Inference(config, args, args.load_path)
     refer_list = random.sample(os.listdir(args.reference_dir), generating_image)
 
-
     print(f"\n * {filename}\n * {generating_image}장 생성시작")
     for i, refer_img in enumerate(refer_list, 1):
         src_img = Image.open(os.path.join(args.source_dir, filename)).convert('RGB')
         ref_img = Image.open(os.path.join(args.reference_dir, refer_img)).convert('RGB')
 
-        result = inference.transfer(src_img, ref_img, postprocess=True)
-        result = result.resize((361, 361))
-        result = np.array(result)
+
+        ### 다중인식 ###
+        FC = FaceCropper();
+        img_path = f'./static/uploads/{filename}'
+        save_path = FC.generate(img_path, filename)
+        src_list = os.listdir(save_path)
+        src_num = len(src_list)
+        merged_img = []
+        if src_num>1:
+            for j in range(src_num):
+                img = cv2.imread(f"{save_path}/src_{j+1}.png")
+                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                img = Image.fromarray(img).convert('RGB')
+
+                result = inference.transfer(img, ref_img, postprocess=True)
+                result = result.resize((361, 361))
+                result = np.array(result)
+
+                merged_img.append(result)
+            result = np.concatenate(merged_img, axis=1)
+        ### 다중인식 ###
+        else:
+            result = inference.transfer(src_img, ref_img, postprocess=True)
+            result = result.resize((361, 361))
+            result = np.array(result)
+
         if result is None:
             continue
 

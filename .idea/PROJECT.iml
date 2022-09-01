@@ -12,6 +12,8 @@
       <sourceFolder url="file://$MODULE_DIR$/EleGANt/results" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/EleGANt/scripts" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/EleGANt/training" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/static" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/static/uploads" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
     </content>
     <orderEntry type="inheritedJdk" />
