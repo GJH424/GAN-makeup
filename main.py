@@ -16,7 +16,6 @@ from EleGANt.training.inference import Inference
 from EleGANt.training.utils import create_logger, print_args # 로그 생성용
 
 import cv2 # 다중인식용
-import glob
 # 모델용 #
 
 # 로그인 #
@@ -259,7 +258,7 @@ def login():
             flash("이메일 또는 비밀번호를 확인하세요.")
     return render_template('login.html')
 
-@app.route('/dashboard/', methods=['GET'])
+@app.route('/dashboard', methods=['GET'])
 def dashboard():
     return render_template('user.html')
 
