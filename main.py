@@ -35,7 +35,7 @@ RESULT_FOLDER = 'static/results/'
 UPLOAD_FOLDER = 'static/uploads/'
 app.config['RESULT_FOLDER'] = RESULT_FOLDER
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-# app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024 # 업로드 5MB 용량 제한
+# app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024 # 업로드 용량 제한
 
 app.secret_key = "secret key"
 
@@ -131,6 +131,7 @@ def upload_image():
 def display_upload(filename):
     return redirect(url_for('static', filename='uploads/' + filename), code=301)
 
+
 class FaceCropper(object):
     CASCADE_PATH = "haarcascade_frontalface_default.xml"
 
@@ -193,19 +194,21 @@ def main(config, args, filename, generating_image):
     inference = Inference(config, args, args.load_path)
     refer_list = random.sample(os.listdir(args.reference_dir), generating_image)
 
+    ### 다중인식 ###
+    FC = FaceCropper();
+    img_path = f'./static/uploads/{filename}'
+    save_path = FC.generate(img_path, filename)
+    src_list = os.listdir(save_path)
+    src_num = len(src_list)
+    merged_img = []
+    ### 다중인식 ###
+
     print(f"\n * {filename}\n * {generating_image}장 생성시작")
     for i, refer_img in enumerate(refer_list, 1):
         src_img = Image.open(os.path.join(args.source_dir, filename)).convert('RGB')
         ref_img = Image.open(os.path.join(args.reference_dir, refer_img)).convert('RGB')
 
-
         ### 다중인식 ###
-        FC = FaceCropper();
-        img_path = f'./static/uploads/{filename}'
-        save_path = FC.generate(img_path, filename)
-        src_list = os.listdir(save_path)
-        src_num = len(src_list)
-        merged_img = []
         if src_num>1:
             for j in range(src_num):
                 img = cv2.imread(f"{save_path}/src_{j+1}.png")
@@ -217,7 +220,7 @@ def main(config, args, filename, generating_image):
                 result = np.array(result)
 
                 merged_img.append(result)
-            result = np.concatenate(merged_img, axis=1)
+            result = np.concatenate(merged_img, axis=0)
         ### 다중인식 ###
         else:
             result = inference.transfer(src_img, ref_img, postprocess=True)
@@ -297,7 +300,7 @@ def register():
             return redirect(url_for('login'))
     elif request.method == 'POST':
         message = '양식을 모두 작성해 주세요.'
-    return render_template('register.html', message = message)
+    return render_template('register.html', message=message)
 
 # generating image download(click)
 @app.route('/static/<path:filename>', methods=['GET', 'POST'])

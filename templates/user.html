@@ -228,7 +228,7 @@
     <div id="gen_div" style="margin-left:10px;">
         {% for img in img_list %}
         <a href="{{ url_for('download_file', filename=img) }}" download="image">
-        <img src="{{url_for('static', filename=img)}}" style="width:361px; height:361px; margin-right:10px; margin-bottom:1px;" alt="{{img}}"/>
+        <img src="{{url_for('static', filename=img)}}" style="width:361px; margin-right:10px; margin-bottom:1px;" alt="{{img}}"/>
         </a>
         {% endfor %}
     </div>
